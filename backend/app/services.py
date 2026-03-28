@@ -17,7 +17,6 @@ def check_booking_overlap(
     Returns True if there is an overlap.
     """
     query = db.query(models.Booking).filter(
-        models.Booking.event_type_id == event_type_id,
         models.Booking.status == "booked",
         models.Booking.start_time < end_time,
         models.Booking.end_time > start_time
@@ -74,7 +73,6 @@ def generate_slots(
     day_end = tz.localize(datetime.combine(target_date, dt_time.max)).astimezone(pytz.UTC)
     
     existing_bookings = db.query(models.Booking).filter(
-        models.Booking.event_type_id == event.id,
         models.Booking.status == "booked",
         models.Booking.start_time >= day_start,
         models.Booking.start_time < day_end

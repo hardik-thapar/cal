@@ -28,6 +28,7 @@ class EventType(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     schedule = relationship("AvailabilitySchedule")
+    bookings = relationship("Booking", back_populates="event_type", cascade="all, delete-orphan")
 
 class AvailabilitySlot(Base):
     __tablename__ = "availability_slots"
@@ -44,7 +45,9 @@ class Booking(Base):
     __tablename__ = "bookings"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    event_type_id = Column(UUID(as_uuid=True), ForeignKey("event_types.id"), nullable=False)
+    event_type_id = Column(UUID(as_uuid=True), ForeignKey("event_types.id", ondelete="CASCADE"), nullable=False)
+    
+    event_type = relationship("EventType", back_populates="bookings")
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
     start_time = Column(DateTime(timezone=True), nullable=False)
