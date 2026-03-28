@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Scheduling Platform',
-  description: 'Book meetings and manage your calendar',
+  title: 'SchedulePro - Intelligent Scheduling Platform',
+  description: 'The world\'s most intelligent scheduling platform. Save time, eliminate double bookings, and make scheduling effortless.',
 };
 
 export default function RootLayout({
@@ -16,7 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

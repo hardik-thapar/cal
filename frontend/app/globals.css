@@ -1,120 +1,158 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif";
+  
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  
+  --color-brand-primary: #ffffff;
+  --color-brand-secondary: #0f0f10;
+  --color-brand-muted: #a1a1aa;
+  --color-brand-border: #272727;
+  --color-brand-hover: #1a1a1b;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #0a0a0a;
+  --card-foreground: #ffffff;
+  --popover: #0a0a0a;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1b;
+  --secondary-foreground: #ffffff;
+  --muted: #1a1a1b;
+  --muted-foreground: #a1a1aa;
+  --accent: #1a1a1b;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #272727;
+  --input: #272727;
+  --ring: #d4d4d8;
+  --radius: 0.5rem;
+
+  /* Cal.com colors */
+  --cal-black: #000000;
+  --cal-surface: #111111;
+  --cal-surface-hover: #1a1a1b;
+  --cal-border: #272727;
+  --cal-text-primary: #ffffff;
+  --cal-text-secondary: #a1a1aa;
+  --cal-text-muted: #71717a;
+  --cal-accent: #ffffff;
+  --cal-accent-hover: #f4f4f5;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+  * {
+    border-color: var(--border);
   }
 }
 
-/* React Day Picker Custom Styles */
-.rdp {
-  --rdp-cell-size: 42px;
-  --rdp-accent-color: #2563eb;
-  --rdp-background-color: #eff6ff;
-  margin: 0;
+/* Custom Utilities */
+.glass {
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
 }
 
-.rdp-months {
+.sidebar-item-active {
+  background-color: var(--secondary);
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.sidebar-item {
+  color: var(--muted-foreground);
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background-color: var(--secondary);
+  color: var(--foreground);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-}
-
-.rdp-month {
-  margin: 0;
-}
-
-.rdp-caption {
-  display: flex;
-  justify-content: center;
-  padding: 1rem 0;
-  font-weight: 600;
-  font-size: 1rem;
-  color: #111827;
-}
-
-.rdp-nav {
-  position: absolute;
-  top: 1rem;
-  display: flex;
   gap: 0.5rem;
 }
 
-.rdp-nav_button {
-  width: 32px;
-  height: 32px;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  background: white;
-  display: flex;
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  gap: 0.5rem;
 }
 
-.rdp-nav_button:hover {
-  background: #f9fafb;
-  border-color: #2563eb;
+.btn-secondary:hover {
+  background-color: var(--cal-surface-hover);
 }
 
-.rdp-nav_button_previous {
-  left: 0;
-}
-
-.rdp-nav_button_next {
-  right: 0;
-}
-
-.rdp-table {
-  margin-top: 1rem;
-}
-
-.rdp-head_cell {
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 0.875rem;
-  padding: 0.5rem 0;
-}
-
-.rdp-cell {
-  padding: 2px;
-}
-
-.rdp-day {
-  width: var(--rdp-cell-size);
-  height: var(--rdp-cell-size);
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-}
-
-.rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
+/* DayPicker Customization */
+.rdp {
+  --rdp-cell-size: 44px;
+  --rdp-accent-color: var(--primary);
+  --rdp-background-color: var(--secondary);
+  margin: 0;
 }
 
 .rdp-day_selected {
-  background-color: #2563eb !important;
-  color: white !important;
-  font-weight: 600;
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: 50%;
 }
 
-.rdp-day_selected:hover {
-  background-color: #1d4ed8 !important;
+.rdp-day:hover:not(.rdp-day_selected) {
+  background-color: var(--secondary);
+  border-radius: 50%;
 }
 
-.rdp-day_today {
-  font-weight: 700;
-  color: #2563eb;
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.rdp-day_disabled {
-  color: #d1d5db;
-  cursor: not-allowed;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.rdp-day_outside {
-  color: #d1d5db;
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }

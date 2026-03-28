@@ -43,7 +43,8 @@ export const bookingsAPI = {
 
 // Public
 export const publicAPI = {
+  getEvent: (slug: string) => api.get(`/public/events/${slug}`),
   getSlots: (slug: string, date: string) => 
     api.get(`/public/slots?slug=${slug}&date=${date}`),
-  createBooking: (data: any) => api.post('/public/book', data),
+  book: (data: any) => api.post('/public/book', data),
 };
