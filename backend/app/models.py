@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, DateTime, Time, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Integer, Text, DateTime, Time, ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
@@ -37,5 +37,5 @@ class Booking(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
-        UniqueConstraint('event_type_id', 'start_time', name='uq_event_start_time'),
+        CheckConstraint('start_time < end_time', name='check_start_before_end'),
     )

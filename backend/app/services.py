@@ -1,9 +1,33 @@
 from datetime import datetime, timedelta, time as dt_time
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from typing import List
 import pytz
 from app import models, schemas
+
+def check_booking_overlap(
+    db: Session,
+    event_type_id: str,
+    start_time: datetime,
+    end_time: datetime,
+    exclude_booking_id: str = None
+) -> bool:
+    """
+    Check if a booking overlaps with existing bookings.
+    Returns True if there is an overlap.
+    """
+    query = db.query(models.Booking).filter(
+        models.Booking.event_type_id == event_type_id,
+        models.Booking.status == "booked",
+        # Overlap condition: (new_start < existing_end) AND (new_end > existing_start)
+        models.Booking.start_time < end_time,
+        models.Booking.end_time > start_time
+    )
+    
+    if exclude_booking_id:
+        query = query.filter(models.Booking.id != exclude_booking_id)
+    
+    return query.first() is not None
 
 def generate_slots(
     db: Session,
@@ -12,6 +36,7 @@ def generate_slots(
 ) -> List[schemas.SlotResponse]:
     """
     Generate available time slots for a given event and date.
+    Filters out ANY overlapping bookings.
     """
     # Parse the date
     target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -45,6 +70,17 @@ def generate_slots(
     # Convert to UTC for comparison
     now_utc = datetime.now(pytz.UTC)
 
+    # Fetch all bookings for this event on this date
+    day_start = tz.localize(datetime.combine(target_date, dt_time.min)).astimezone(pytz.UTC)
+    day_end = tz.localize(datetime.combine(target_date, dt_time.max)).astimezone(pytz.UTC)
+    
+    existing_bookings = db.query(models.Booking).filter(
+        models.Booking.event_type_id == event.id,
+        models.Booking.status == "booked",
+        models.Booking.start_time >= day_start,
+        models.Booking.start_time < day_end
+    ).all()
+
     while current_time + timedelta(minutes=event.duration) <= end_boundary:
         slot_end = current_time + timedelta(minutes=event.duration)
         
@@ -57,19 +93,18 @@ def generate_slots(
             current_time += timedelta(minutes=event.duration)
             continue
 
-        # Check if slot is already booked
-        existing_booking = db.query(models.Booking).filter(
-            and_(
-                models.Booking.event_type_id == event.id,
-                models.Booking.start_time == slot_start_utc,
-                models.Booking.status == "booked"
-            )
-        ).first()
+        # Check for ANY overlapping booking
+        # Overlap condition: (slot_start < booking_end) AND (slot_end > booking_start)
+        is_available = True
+        for booking in existing_bookings:
+            if slot_start_utc < booking.end_time and slot_end_utc > booking.start_time:
+                is_available = False
+                break
 
         slots.append(schemas.SlotResponse(
             start_time=slot_start_utc,
             end_time=slot_end_utc,
-            available=existing_booking is None
+            available=is_available
         ))
 
         current_time += timedelta(minutes=event.duration)
@@ -81,7 +116,7 @@ def create_booking(
     booking_data: schemas.BookingCreate
 ) -> models.Booking:
     """
-    Create a new booking with conflict checking.
+    Create a new booking with strict overlap checking.
     """
     # Get event to calculate end time
     event = db.query(models.EventType).filter(
@@ -93,6 +128,10 @@ def create_booking(
 
     # Calculate end time
     end_time = booking_data.start_time + timedelta(minutes=event.duration)
+
+    # CRITICAL: Check for overlapping bookings
+    if check_booking_overlap(db, booking_data.event_type_id, booking_data.start_time, end_time):
+        raise ValueError("This time slot is already booked")
 
     # Create booking
     db_booking = models.Booking(

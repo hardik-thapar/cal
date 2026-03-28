@@ -131,10 +131,13 @@ def create_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)
         db_booking = services.create_booking(db, booking)
         return db_booking
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except IntegrityError:
+        error_msg = str(e)
+        if "already booked" in error_msg:
+            raise HTTPException(status_code=400, detail="This time slot is already booked")
+        raise HTTPException(status_code=400, detail=error_msg)
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=409, detail="This time slot is already booked")
+        raise HTTPException(status_code=500, detail="Failed to create booking")
 
 # ==================== BOOKINGS DASHBOARD ====================
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { eventTypesAPI } from '@/lib/api';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Copy, Check, ExternalLink } from 'lucide-react';
 
 interface EventType {
   id: string;
@@ -24,6 +24,7 @@ export default function EventsPage() {
     slug: '',
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -78,6 +79,13 @@ export default function EventsPage() {
     setShowForm(true);
   };
 
+  const copyBookingLink = (slug: string) => {
+    const link = `${window.location.origin}/book/${slug}`;
+    navigator.clipboard.writeText(link);
+    setCopiedSlug(slug);
+    setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
   if (loading) {
     return <div className="p-8">Loading...</div>;
   }
@@ -93,13 +101,13 @@ export default function EventsPage() {
           <div className="flex gap-4">
             <Link
               href="/dashboard/availability"
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-100 transition"
             >
               Availability
             </Link>
             <Link
               href="/dashboard/bookings"
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-100 transition"
             >
               Bookings
             </Link>
@@ -109,7 +117,7 @@ export default function EventsPage() {
                 setEditingId(null);
                 setFormData({ title: '', description: '', duration: 30, slug: '' });
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition flex items-center gap-2"
             >
               <Plus size={20} />
               New Event Type
@@ -118,7 +126,7 @@ export default function EventsPage() {
         </div>
 
         {showForm && (
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8 border border-gray-200">
+          <div className="bg-white p-6 rounded-2xl shadow-sm mb-8 border border-gray-200">
             <h2 className="text-xl font-semibold mb-4">
               {editingId ? 'Edit Event Type' : 'Create Event Type'}
             </h2>
@@ -131,7 +139,7 @@ export default function EventsPage() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -142,7 +150,7 @@ export default function EventsPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                 />
               </div>
@@ -155,7 +163,7 @@ export default function EventsPage() {
                     type="number"
                     value={formData.duration}
                     onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     min="15"
                     step="15"
@@ -169,7 +177,7 @@ export default function EventsPage() {
                     type="text"
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     pattern="[a-z0-9-]+"
                     placeholder="e.g., 30-min-meeting"
@@ -179,7 +187,7 @@ export default function EventsPage() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
                 >
                   {editingId ? 'Update' : 'Create'}
                 </button>
@@ -190,7 +198,7 @@ export default function EventsPage() {
                     setEditingId(null);
                     setFormData({ title: '', description: '', duration: 30, slug: '' });
                   }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition"
                 >
                   Cancel
                 </button>
@@ -200,7 +208,7 @@ export default function EventsPage() {
         )}
 
         {events.length === 0 ? (
-          <div className="bg-white p-12 rounded-lg shadow-sm text-center border border-gray-200">
+          <div className="bg-white p-12 rounded-2xl shadow-sm text-center border border-gray-200">
             <p className="text-gray-500">No event types yet. Create your first one!</p>
           </div>
         ) : (
@@ -208,16 +216,14 @@ export default function EventsPage() {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition"
+                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-gray-900">{event.title}</h3>
-                    <p className="text-gray-600 mt-1">{event.description}</p>
+                    <p className="text-gray-600 mt-1 text-sm">{event.description}</p>
                     <div className="flex gap-4 mt-3 text-sm text-gray-500">
                       <span>{event.duration} minutes</span>
-                      <span>•</span>
-                      <span>/book/{event.slug}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -237,14 +243,31 @@ export default function EventsPage() {
                     </button>
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 flex items-center gap-3">
                   <Link
                     href={`/book/${event.slug}`}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
                     target="_blank"
                   >
-                    View booking page →
+                    <ExternalLink size={14} />
+                    View booking page
                   </Link>
+                  <button
+                    onClick={() => copyBookingLink(event.slug)}
+                    className="text-gray-600 hover:text-gray-900 text-sm font-medium flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                  >
+                    {copiedSlug === event.slug ? (
+                      <>
+                        <Check size={14} className="text-green-600" />
+                        <span className="text-green-600">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={14} />
+                        <span>Copy link</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             ))}
