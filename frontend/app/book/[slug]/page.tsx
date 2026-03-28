@@ -6,7 +6,7 @@ import { eventTypesAPI, publicAPI } from '@/lib/api';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { format } from 'date-fns';
-import { Clock, User, Mail, Check } from 'lucide-react';
+import { Clock, User, Mail, Globe } from 'lucide-react';
 
 interface EventType {
   id: string;
@@ -101,7 +101,7 @@ export default function BookingPage() {
 
   const formatTime = (dateStr: string) => {
     return new Date(dateStr).toLocaleTimeString('en-US', {
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     });
@@ -109,17 +109,17 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin h-8 w-8 border-4 border-gray-900 border-t-transparent rounded-full"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#fafafa' }}>
+        <div className="animate-spin h-8 w-8 border-4 border-black border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-12 rounded-2xl border border-gray-200">
-          <h1 className="text-2xl font-bold">Event Not Found</h1>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#fafafa' }}>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold">Event Not Found</h1>
         </div>
       </div>
     );
@@ -128,75 +128,69 @@ export default function BookingPage() {
   const availableSlots = slots.filter((s) => s.available);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12 max-w-5xl">
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="grid md:grid-cols-5">
-            <div className="md:col-span-2 p-8 border-r border-gray-200">
-              <div className="mb-8">
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2">{event.title}</h1>
+    <div className="min-h-screen" style={{ backgroundColor: '#fafafa' }}>
+      <div className="max-w-5xl mx-auto px-6 py-12">
+        <div className="bg-white rounded-lg overflow-hidden" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+          <div className="grid md:grid-cols-3">
+            {/* Left: Event Info */}
+            <div className="p-8 border-r" style={{ borderColor: '#e5e7eb' }}>
+              <div className="mb-6">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-3">{event.title}</h1>
                 {event.description && (
-                  <p className="text-sm text-gray-600 mb-4">{event.description}</p>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">{event.description}</p>
                 )}
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Clock size={16} />
                   <span>{event.duration} min</span>
                 </div>
               </div>
-
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">Select a Date</h3>
-                <DayPicker
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={{ before: new Date() }}
-                  className="cal-picker"
-                />
-              </div>
-
-              {selectedDate && selectedSlot && (
-                <div className="pt-6 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <Check size={16} className="text-green-600" />
-                    <span>{format(selectedDate, 'EEE, MMM d')}</span>
-                  </div>
-                  <div className="text-sm text-gray-600">{formatTime(selectedSlot.start_time)}</div>
-                </div>
-              )}
             </div>
 
-            <div className="md:col-span-3 p-8">
+            {/* Middle: Calendar */}
+            <div className="p-8 border-r" style={{ borderColor: '#e5e7eb' }}>
+              <h3 className="text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wider">Select a Date</h3>
+              <DayPicker
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={{ before: new Date() }}
+                className="modern-calendar"
+              />
+            </div>
+
+            {/* Right: Time Slots / Form */}
+            <div className="p-8">
               {!selectedDate ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500 text-sm">Select a date to see available times</p>
+                  <p className="text-sm text-gray-400">Pick a date to see available times</p>
                 </div>
               ) : !selectedSlot ? (
                 <>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">
-                    {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                  <h3 className="text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wider">
+                    {format(selectedDate, 'EEE, MMM d')}
                   </h3>
                   {loadingSlots ? (
                     <div className="flex justify-center py-8">
-                      <div className="animate-spin h-6 w-6 border-2 border-gray-900 border-t-transparent rounded-full"></div>
+                      <div className="animate-spin h-6 w-6 border-2 border-black border-t-transparent rounded-full"></div>
                     </div>
                   ) : availableSlots.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500 text-sm mb-4">No available times</p>
+                    <div className="text-center py-8">
+                      <p className="text-sm text-gray-500 mb-3">No available times</p>
                       <button
                         onClick={() => setSelectedDate(undefined)}
-                        className="text-sm text-gray-900 hover:underline"
+                        className="text-xs text-gray-700 hover:text-black font-medium"
                       >
-                        Choose another date
+                        Pick another date
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+                    <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-thin">
                       {availableSlots.map((slot, idx) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedSlot(slot)}
-                          className="px-4 py-2.5 text-sm font-medium border border-gray-300 rounded-lg hover:border-gray-900 hover:bg-gray-50 transition"
+                          className="w-full px-3 py-2.5 text-sm text-center border rounded-md hover:border-black transition-colors"
+                          style={{ borderColor: '#d1d5db' }}
                           data-testid={`time-slot-${idx}`}
                         >
                           {formatTime(slot.start_time)}
@@ -209,44 +203,45 @@ export default function BookingPage() {
                 <>
                   <button
                     onClick={() => setSelectedSlot(null)}
-                    className="text-sm text-gray-600 hover:text-gray-900 mb-6"
+                    className="text-xs text-gray-600 hover:text-black mb-6 font-medium"
                   >
-                    ← Change time
+                    ← Back
                   </button>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-6">Enter Details</h3>
+                  <div className="mb-6 p-3 bg-gray-50 rounded-md">
+                    <div className="text-xs text-gray-600 mb-1">Selected time</div>
+                    <div className="text-sm font-semibold">{formatTime(selectedSlot.start_time)}</div>
+                  </div>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                      <div className="relative">
-                        <User size={18} className="absolute left-3 top-2.5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                          required
-                          data-testid="booking-name-input"
-                        />
-                      </div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Name *</label>
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        style={{ borderColor: '#d1d5db' }}
+                        required
+                        placeholder="Your name"
+                        data-testid="booking-name-input"
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                      <div className="relative">
-                        <Mail size={18} className="absolute left-3 top-2.5 text-gray-400" />
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                          required
-                          data-testid="booking-email-input"
-                        />
-                      </div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Email *</label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        style={{ borderColor: '#d1d5db' }}
+                        required
+                        placeholder="you@example.com"
+                        data-testid="booking-email-input"
+                      />
                     </div>
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full px-6 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+                      className="w-full px-4 py-2.5 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-900 transition-colors disabled:opacity-50"
                       data-testid="confirm-booking-button"
                     >
                       {submitting ? 'Confirming...' : 'Confirm'}
@@ -260,19 +255,61 @@ export default function BookingPage() {
       </div>
 
       <style jsx global>{`
-        .cal-picker .rdp {
-          --rdp-cell-size: 40px;
+        .modern-calendar {
+          width: 100%;
+        }
+        .modern-calendar .rdp {
           margin: 0;
+          --rdp-cell-size: 40px;
         }
-        .cal-picker .rdp-day_selected {
-          background-color: #111827;
-          color: white;
+        .modern-calendar .rdp-months {
+          width: 100%;
         }
-        .cal-picker .rdp-day_selected:hover {
-          background-color: #1f2937;
+        .modern-calendar .rdp-month {
+          width: 100%;
         }
-        .cal-picker .rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
-          background-color: #f9fafb;
+        .modern-calendar .rdp-caption {
+          display: flex;
+          justify-content: center;
+          padding: 0 0 1rem 0;
+          font-weight: 600;
+          font-size: 0.875rem;
+        }
+        .modern-calendar .rdp-head_cell {
+          color: #6b7280;
+          font-weight: 600;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+        }
+        .modern-calendar .rdp-day {
+          font-size: 0.875rem;
+          border-radius: 6px;
+          font-weight: 500;
+        }
+        .modern-calendar .rdp-day_selected {
+          background-color: #000 !important;
+          color: white !important;
+          font-weight: 600;
+        }
+        .modern-calendar .rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
+          background-color: #f3f4f6;
+        }
+        .modern-calendar .rdp-day_today {
+          font-weight: 700;
+          color: #000;
+        }
+        .modern-calendar .rdp-day_disabled {
+          color: #d1d5db;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 2px;
         }
       `}</style>
     </div>

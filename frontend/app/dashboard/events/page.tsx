@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { eventTypesAPI, schedulesAPI } from '@/lib/api';
-import { Plus, Edit, Trash2, Copy, Check, ExternalLink } from 'lucide-react';
+import { Plus, MoreVertical, Link as LinkIcon, Copy, Check, Clock } from 'lucide-react';
 
 interface EventType {
   id: string;
@@ -71,25 +71,13 @@ export default function EventsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this event?')) return;
+    if (!confirm('Delete this event type?')) return;
     try {
       await eventTypesAPI.delete(id);
       fetchData();
     } catch (error) {
       console.error('Error:', error);
     }
-  };
-
-  const handleEdit = (event: EventType) => {
-    setFormData({
-      title: event.title,
-      description: event.description,
-      duration: event.duration,
-      slug: event.slug,
-      availability_schedule_id: event.availability_schedule_id || '',
-    });
-    setEditingId(event.id);
-    setShowForm(true);
   };
 
   const copyLink = (slug: string) => {
@@ -103,89 +91,97 @@ export default function EventsPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Event Types</h1>
-        <p className="text-sm text-gray-600 mt-1">Create and manage your event types</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Event Types</h1>
+          <p className="text-sm text-gray-600 mt-1">Create events to share for people to book on your calendar</p>
+        </div>
+        <button
+          onClick={() => {
+            setShowForm(true);
+            setEditingId(null);
+            setFormData({ title: '', description: '', duration: 30, slug: '', availability_schedule_id: '' });
+          }}
+          className="px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-900 transition-colors"
+        >
+          New Event Type
+        </button>
       </div>
 
-      <button
-        onClick={() => {
-          setShowForm(true);
-          setEditingId(null);
-          setFormData({ title: '', description: '', duration: 30, slug: '', availability_schedule_id: '' });
-        }}
-        className="mb-6 px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition flex items-center gap-2"
-      >
-        <Plus size={18} />
-        New Event Type
-      </button>
-
       {showForm && (
-        <div className="bg-white p-6 rounded-lg border border-gray-200 mb-6">
+        <div className="bg-white p-6 rounded-lg mb-6" style={{ border: '1px solid #e5e7eb' }}>
           <h2 className="text-lg font-semibold mb-4">{editingId ? 'Edit' : 'Create'} Event Type</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Event name</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                style={{ borderColor: '#d1d5db' }}
                 required
+                placeholder="Quick Chat"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                rows={2}
+                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                style={{ borderColor: '#d1d5db' }}
+                rows={3}
+                placeholder="A quick video meeting"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration (min)</label>
-                <input
-                  type="number"
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Duration</label>
+                <select
                   value={formData.duration}
                   onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  required
-                  min="15"
-                  step="15"
-                />
+                  className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  style={{ borderColor: '#d1d5db' }}
+                >
+                  <option value="15">15 min</option>
+                  <option value="30">30 min</option>
+                  <option value="45">45 min</option>
+                  <option value="60">60 min</option>
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">URL slug</label>
                 <input
                   type="text"
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                  className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  style={{ borderColor: '#d1d5db' }}
                   required
-                  pattern="[a-z0-9-]+"
+                  placeholder="quick-chat"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Availability Schedule</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Availability</label>
               <select
                 value={formData.availability_schedule_id}
                 onChange={(e) => setFormData({ ...formData, availability_schedule_id: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                style={{ borderColor: '#d1d5db' }}
               >
-                <option value="">Select a schedule</option>
+                <option value="">Select schedule</option>
                 {schedules.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.timezone})
+                    {s.name}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="flex gap-2">
-              <button type="submit" className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800">
-                {editingId ? 'Update' : 'Create'}
+            <div className="flex gap-2 pt-2">
+              <button type="submit" className="px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-900">
+                {editingId ? 'Save' : 'Create'}
               </button>
               <button
                 type="button"
@@ -193,7 +189,8 @@ export default function EventsPage() {
                   setShowForm(false);
                   setEditingId(null);
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50"
+                style={{ borderColor: '#d1d5db' }}
               >
                 Cancel
               </button>
@@ -203,60 +200,43 @@ export default function EventsPage() {
       )}
 
       {events.length === 0 ? (
-        <div className="bg-white p-12 rounded-lg border border-gray-200 text-center">
-          <p className="text-gray-500">No event types yet</p>
+        <div className="bg-white p-12 rounded-lg text-center" style={{ border: '1px solid #e5e7eb' }}>
+          <p className="text-gray-500 text-sm">No event types yet</p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-3">
           {events.map((event) => (
-            <div key={event.id} className="bg-white p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition">
-              <div className="flex justify-between items-start">
+            <div
+              key={event.id}
+              className="bg-white p-5 rounded-lg hover:shadow-sm transition-shadow"
+              style={{ border: '1px solid #e5e7eb' }}
+            >
+              <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{event.description}</p>
-                  <div className="flex gap-4 mt-3 text-sm text-gray-500">
-                    <span>{event.duration} min</span>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">{event.title}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{event.description}</p>
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Clock size={14} />
+                      {event.duration}m
+                    </span>
+                    <button
+                      onClick={() => copyLink(event.slug)}
+                      className="flex items-center gap-1 hover:text-gray-900"
+                    >
+                      {copiedSlug === event.slug ? (
+                        <><Check size={14} /> Copied!</>
+                      ) : (
+                        <><LinkIcon size={14} /> Copy link</>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(event)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                  >
-                    <Edit size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-3">
-                <a
-                  href={`/book/${event.slug}`}
-                  target="_blank"
-                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-                >
-                  <ExternalLink size={14} />
-                  View page
-                </a>
                 <button
-                  onClick={() => copyLink(event.slug)}
-                  className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => handleDelete(event.id)}
+                  className="p-1 text-gray-400 hover:text-gray-600"
                 >
-                  {copiedSlug === event.slug ? (
-                    <>
-                      <Check size={14} className="text-green-600" />
-                      <span className="text-green-600">Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      <span>Copy link</span>
-                    </>
-                  )}
+                  <MoreVertical size={20} />
                 </button>
               </div>
             </div>

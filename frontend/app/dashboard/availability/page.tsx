@@ -106,15 +106,16 @@ export default function AvailabilityPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Availability</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Availability</h1>
         <p className="text-sm text-gray-600 mt-1">Configure times when you are available for bookings</p>
       </div>
 
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-6 flex items-center gap-3">
         <select
           value={selectedSchedule || ''}
           onChange={(e) => setSelectedSchedule(e.target.value)}
-          className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+          className="px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+          style={{ borderColor: '#d1d5db' }}
         >
           {schedules.map((s) => (
             <option key={s.id} value={s.id}>
@@ -124,33 +125,35 @@ export default function AvailabilityPage() {
         </select>
         <button
           onClick={() => setShowNewSchedule(true)}
-          className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 flex items-center gap-2"
+          className="px-3 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-900 flex items-center gap-2"
         >
-          <Plus size={18} />
-          New Schedule
+          <Plus size={16} />
+          New
         </button>
       </div>
 
       {showNewSchedule && (
-        <div className="bg-white p-6 rounded-lg border border-gray-200 mb-6">
-          <h3 className="text-sm font-semibold mb-4">Create New Schedule</h3>
+        <div className="bg-white p-5 rounded-lg mb-6" style={{ border: '1px solid #e5e7eb' }}>
+          <h3 className="text-sm font-semibold mb-4">New Schedule</h3>
           <div className="flex gap-2">
             <input
               type="text"
               value={newScheduleName}
               onChange={(e) => setNewScheduleName(e.target.value)}
               placeholder="Schedule name"
-              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              className="flex-1 px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+              style={{ borderColor: '#d1d5db' }}
             />
             <button
               onClick={createSchedule}
-              className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800"
+              className="px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-900"
             >
               Create
             </button>
             <button
               onClick={() => setShowNewSchedule(false)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50"
+              style={{ borderColor: '#d1d5db' }}
             >
               Cancel
             </button>
@@ -159,22 +162,23 @@ export default function AvailabilityPage() {
       )}
 
       {selectedSchedule && (
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-white rounded-lg" style={{ border: '1px solid #e5e7eb' }}>
+          <div className="p-5 border-b" style={{ borderColor: '#e5e7eb' }}>
             <h3 className="text-sm font-semibold">Weekly Hours</h3>
           </div>
 
-          <div className="p-6">
+          <div className="p-5">
             {slots.length === 0 ? (
-              <p className="text-gray-500 text-sm">No availability set</p>
+              <p className="text-gray-500 text-sm py-4">No availability set</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 mb-6">
                 {slots
                   .sort((a, b) => a.day_of_week - b.day_of_week)
                   .map((slot) => (
                     <div
                       key={slot.id}
-                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                      className="flex items-center justify-between p-3 border rounded-md"
+                      style={{ borderColor: '#e5e7eb' }}
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-sm font-medium text-gray-900 w-24">{DAYS[slot.day_of_week]}</span>
@@ -184,7 +188,7 @@ export default function AvailabilityPage() {
                       </div>
                       <button
                         onClick={() => deleteSlot(slot.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        className="p-1 text-gray-400 hover:text-red-600"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -193,13 +197,14 @@ export default function AvailabilityPage() {
               </div>
             )}
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-sm font-semibold mb-4">Add Time Slot</h4>
-              <div className="grid grid-cols-4 gap-4">
+            <div className="pt-4 border-t" style={{ borderColor: '#e5e7eb' }}>
+              <h4 className="text-sm font-semibold mb-3">Add Hours</h4>
+              <div className="grid grid-cols-4 gap-3">
                 <select
                   value={newSlot.day_of_week}
                   onChange={(e) => setNewSlot({ ...newSlot, day_of_week: parseInt(e.target.value) })}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  style={{ borderColor: '#d1d5db' }}
                 >
                   {DAYS.map((day, idx) => (
                     <option key={idx} value={idx}>
@@ -211,17 +216,19 @@ export default function AvailabilityPage() {
                   type="time"
                   value={newSlot.start_time}
                   onChange={(e) => setNewSlot({ ...newSlot, start_time: e.target.value })}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  style={{ borderColor: '#d1d5db' }}
                 />
                 <input
                   type="time"
                   value={newSlot.end_time}
                   onChange={(e) => setNewSlot({ ...newSlot, end_time: e.target.value })}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  style={{ borderColor: '#d1d5db' }}
                 />
                 <button
                   onClick={addSlot}
-                  className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800"
+                  className="px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-900"
                 >
                   Add
                 </button>
