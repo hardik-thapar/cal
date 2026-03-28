@@ -9,6 +9,22 @@ export const api = axios.create({
   },
 });
 
+// Availability Schedules
+export const schedulesAPI = {
+  getAll: () => api.get('/availability-schedules'),
+  getById: (id: string) => api.get(`/availability-schedules/${id}`),
+  create: (data: any) => api.post('/availability-schedules', data),
+  delete: (id: string) => api.delete(`/availability-schedules/${id}`),
+};
+
+// Availability Slots
+export const slotsAPI = {
+  getAll: (scheduleId?: string) => 
+    api.get('/availability-slots', { params: scheduleId ? { schedule_id: scheduleId } : {} }),
+  create: (data: any) => api.post('/availability-slots', data),
+  delete: (id: string) => api.delete(`/availability-slots/${id}`),
+};
+
 // Event Types
 export const eventTypesAPI = {
   getAll: () => api.get('/events'),
@@ -16,12 +32,6 @@ export const eventTypesAPI = {
   create: (data: any) => api.post('/events', data),
   update: (id: string, data: any) => api.put(`/events/${id}`, data),
   delete: (id: string) => api.delete(`/events/${id}`),
-};
-
-// Availability
-export const availabilityAPI = {
-  getAll: () => api.get('/availability'),
-  create: (data: any) => api.post('/availability', data),
 };
 
 // Bookings

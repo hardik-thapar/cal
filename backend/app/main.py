@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List
-from datetime import datetime
+from datetime import datetime, time as dt_time
 import os
 from dotenv import load_dotenv
 
@@ -31,6 +31,77 @@ app.add_middleware(
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy"}
+
+# ==================== AVAILABILITY SCHEDULES ====================
+
+@app.post("/api/availability-schedules", response_model=schemas.AvailabilityScheduleResponse, status_code=status.HTTP_201_CREATED)
+def create_availability_schedule(schedule: schemas.AvailabilityScheduleCreate, db: Session = Depends(get_db)):
+    db_schedule = models.AvailabilitySchedule(**schedule.model_dump())
+    db.add(db_schedule)
+    db.commit()
+    db.refresh(db_schedule)
+    return db_schedule
+
+@app.get("/api/availability-schedules", response_model=List[schemas.AvailabilityScheduleResponse])
+def get_availability_schedules(db: Session = Depends(get_db)):
+    schedules = db.query(models.AvailabilitySchedule).all()
+    return schedules
+
+@app.get("/api/availability-schedules/{schedule_id}", response_model=schemas.AvailabilityScheduleResponse)
+def get_availability_schedule(schedule_id: str, db: Session = Depends(get_db)):
+    schedule = db.query(models.AvailabilitySchedule).filter(
+        models.AvailabilitySchedule.id == schedule_id
+    ).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return schedule
+
+@app.delete("/api/availability-schedules/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_availability_schedule(schedule_id: str, db: Session = Depends(get_db)):
+    schedule = db.query(models.AvailabilitySchedule).filter(
+        models.AvailabilitySchedule.id == schedule_id
+    ).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    db.delete(schedule)
+    db.commit()
+    return None
+
+# ==================== AVAILABILITY SLOTS ====================
+
+@app.post("/api/availability-slots", response_model=schemas.AvailabilitySlotResponse, status_code=status.HTTP_201_CREATED)
+def create_availability_slot(slot: schemas.AvailabilitySlotCreate, db: Session = Depends(get_db)):
+    # Parse time strings
+    start_time = datetime.strptime(slot.start_time, "%H:%M").time()
+    end_time = datetime.strptime(slot.end_time, "%H:%M").time()
+    
+    db_slot = models.AvailabilitySlot(
+        schedule_id=slot.schedule_id,
+        day_of_week=slot.day_of_week,
+        start_time=start_time,
+        end_time=end_time
+    )
+    db.add(db_slot)
+    db.commit()
+    db.refresh(db_slot)
+    return db_slot
+
+@app.get("/api/availability-slots", response_model=List[schemas.AvailabilitySlotResponse])
+def get_availability_slots(schedule_id: str = None, db: Session = Depends(get_db)):
+    query = db.query(models.AvailabilitySlot)
+    if schedule_id:
+        query = query.filter(models.AvailabilitySlot.schedule_id == schedule_id)
+    slots = query.all()
+    return slots
+
+@app.delete("/api/availability-slots/{slot_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_availability_slot(slot_id: str, db: Session = Depends(get_db)):
+    slot = db.query(models.AvailabilitySlot).filter(models.AvailabilitySlot.id == slot_id).first()
+    if not slot:
+        raise HTTPException(status_code=404, detail="Slot not found")
+    db.delete(slot)
+    db.commit()
+    return None
 
 # ==================== EVENT TYPES ====================
 
@@ -84,32 +155,6 @@ def delete_event(event_id: str, db: Session = Depends(get_db)):
     db.delete(db_event)
     db.commit()
     return None
-
-# ==================== AVAILABILITY ====================
-
-@app.post("/api/availability", response_model=schemas.AvailabilityResponse, status_code=status.HTTP_201_CREATED)
-def create_availability(availability: schemas.AvailabilityCreate, db: Session = Depends(get_db)):
-    from datetime import datetime
-    
-    # Parse time strings
-    start_time = datetime.strptime(availability.start_time, "%H:%M").time()
-    end_time = datetime.strptime(availability.end_time, "%H:%M").time()
-    
-    db_availability = models.Availability(
-        day_of_week=availability.day_of_week,
-        start_time=start_time,
-        end_time=end_time,
-        timezone=availability.timezone
-    )
-    db.add(db_availability)
-    db.commit()
-    db.refresh(db_availability)
-    return db_availability
-
-@app.get("/api/availability", response_model=List[schemas.AvailabilityResponse])
-def get_availability(db: Session = Depends(get_db)):
-    availability = db.query(models.Availability).all()
-    return availability
 
 # ==================== PUBLIC BOOKING ====================
 

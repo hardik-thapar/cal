@@ -1,8 +1,19 @@
-from sqlalchemy import Column, String, Integer, Text, DateTime, Time, ForeignKey, UniqueConstraint, CheckConstraint
+from sqlalchemy import Column, String, Integer, Text, DateTime, Time, ForeignKey, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 import uuid
 from app.database import Base
+
+class AvailabilitySchedule(Base):
+    __tablename__ = "availability_schedules"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    timezone = Column(String(100), nullable=False, default="UTC")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    slots = relationship("AvailabilitySlot", back_populates="schedule", cascade="all, delete-orphan")
 
 class EventType(Base):
     __tablename__ = "event_types"
@@ -10,19 +21,24 @@ class EventType(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(255), nullable=False)
     description = Column(Text)
-    duration = Column(Integer, nullable=False)  # in minutes
+    duration = Column(Integer, nullable=False)
     slug = Column(String(255), unique=True, nullable=False)
+    availability_schedule_id = Column(UUID(as_uuid=True), ForeignKey("availability_schedules.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    schedule = relationship("AvailabilitySchedule")
 
-class Availability(Base):
-    __tablename__ = "availability"
+class AvailabilitySlot(Base):
+    __tablename__ = "availability_slots"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    day_of_week = Column(Integer, nullable=False)  # 0=Sunday, 6=Saturday
+    schedule_id = Column(UUID(as_uuid=True), ForeignKey("availability_schedules.id"), nullable=False)
+    day_of_week = Column(Integer, nullable=False)
     start_time = Column(Time, nullable=False)
     end_time = Column(Time, nullable=False)
-    timezone = Column(String(100), nullable=False)
+    
+    schedule = relationship("AvailabilitySchedule", back_populates="slots")
 
 class Booking(Base):
     __tablename__ = "bookings"

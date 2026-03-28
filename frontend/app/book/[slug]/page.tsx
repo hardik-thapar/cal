@@ -6,7 +6,7 @@ import { eventTypesAPI, publicAPI } from '@/lib/api';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { format } from 'date-fns';
-import { Clock, Calendar as CalendarIcon, User, Mail, ArrowLeft } from 'lucide-react';
+import { Clock, User, Mail, Check } from 'lucide-react';
 
 interface EventType {
   id: string;
@@ -38,7 +38,6 @@ export default function BookingPage() {
     name: '',
     email: '',
   });
-  const [step, setStep] = useState<'date' | 'time' | 'form'>('date');
 
   useEffect(() => {
     fetchEvent();
@@ -68,18 +67,11 @@ export default function BookingPage() {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       const response = await publicAPI.getSlots(slug, dateStr);
       setSlots(response.data);
-      setStep('time');
+      setSelectedSlot(null);
     } catch (error) {
       console.error('Error fetching slots:', error);
     } finally {
       setLoadingSlots(false);
-    }
-  };
-
-  const handleSlotSelect = (slot: Slot) => {
-    if (slot.available) {
-      setSelectedSlot(slot);
-      setStep('form');
     }
   };
 
@@ -97,9 +89,8 @@ export default function BookingPage() {
       });
       router.push(`/book/${slug}/confirm?date=${format(selectedDate!, 'yyyy-MM-dd')}&time=${formatTimeSlot(selectedSlot.start_time)}&name=${formData.name}&email=${formData.email}`);
     } catch (error: any) {
-      alert(error.response?.data?.detail || 'Error creating booking. This slot may have been booked.');
+      alert(error.response?.data?.detail || 'Error creating booking.');
       await fetchSlots();
-      setStep('time');
       setSelectedSlot(null);
     } finally {
       setSubmitting(false);
@@ -117,21 +108,18 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className=\"min-h-screen flex items-center justify-center\" style={{backgroundColor: '#f8fafc'}}>
+        <div className=\"inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-gray-900 border-r-transparent\"></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center bg-white p-12 rounded-2xl shadow-lg border border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Event Not Found</h1>
-          <p className="text-gray-600">The event you're looking for doesn't exist.</p>
+      <div className=\"min-h-screen flex items-center justify-center\" style={{backgroundColor: '#f8fafc'}}>
+        <div className=\"text-center bg-white p-12 rounded-2xl border border-gray-200\">
+          <h1 className=\"text-2xl font-bold text-gray-900 mb-2\">Event Not Found</h1>
+          <p className=\"text-gray-600\">The event you're looking for doesn't exist.</p>
         </div>
       </div>
     );
@@ -140,193 +128,190 @@ export default function BookingPage() {
   const availableSlots = slots.filter((slot) => slot.available);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <CalendarIcon className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
-              <div className="flex items-center gap-2 text-gray-500 mt-1">
-                <Clock size={16} />
-                <span className="text-sm">{event.duration} min</span>
-              </div>
-            </div>
-          </div>
-          {event.description && (
-            <p className="text-gray-600 text-sm">{event.description}</p>
-          )}
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            {step === 'date' || step === 'time' ? (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <CalendarIcon size={20} className="text-blue-600" />
-                  Select Date & Time
-                </h2>
-                <div className="flex justify-center">
-                  <DayPicker
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={{ before: new Date() }}
-                    modifiersClassNames={{
-                      selected: 'bg-blue-600 text-white hover:bg-blue-700',
-                      today: 'font-bold',
-                    }}
-                    className="rdp-custom"
-                  />
+    <div className=\"min-h-screen\" style={{backgroundColor: '#f8fafc'}}>
+      <div className=\"container mx-auto px-4 py-12 max-w-5xl\">
+        <div className=\"bg-white rounded-2xl border border-gray-200 overflow-hidden\">
+          <div className=\"grid md:grid-cols-5\">
+            {/* Left Section - Event Details & Calendar */}
+            <div className=\"md:col-span-2 p-8 border-r border-gray-200\">
+              <div className=\"mb-8\">\n                <h1 className=\"text-2xl font-semibold text-gray-900 mb-2\">{event.title}</h1>
+                {event.description && (
+                  <p className=\"text-sm text-gray-600 mb-4\">{event.description}</p>
+                )}
+                <div className=\"flex items-center gap-2 text-sm text-gray-500\">
+                  <Clock size={16} />
+                  <span>{event.duration} min</span>
                 </div>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <button
-                  onClick={() => {
-                    setStep('time');
-                    setSelectedSlot(null);
+              </div>
+
+              <div className=\"mb-6\">
+                <h3 className=\"text-sm font-semibold text-gray-900 mb-4\">Select a Date</h3>
+                <DayPicker
+                  mode=\"single\"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  disabled={{ before: new Date() }}
+                  modifiersClassNames={{
+                    selected: 'bg-gray-900 text-white hover:bg-gray-800',
+                    today: 'font-bold text-gray-900',
                   }}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition mb-4"
-                >
-                  <ArrowLeft size={18} />
-                  <span className="text-sm">Change date/time</span>
-                </button>
-                <div className="space-y-3">
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <p className="text-xs text-gray-600 mb-1 font-medium">DATE</p>
-                    <p className="font-semibold text-gray-900">
-                      {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
-                    </p>
+                  className=\"cal-daypicker\"
+                />
+              </div>
+
+              {selectedDate && selectedSlot && (
+                <div className=\"pt-6 border-t border-gray-200\">
+                  <div className=\"flex items-center gap-2 text-sm text-gray-600 mb-2\">
+                    <Check size={16} className=\"text-green-600\" />
+                    <span>{format(selectedDate, 'EEE, MMM d')}</span>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <p className="text-xs text-gray-600 mb-1 font-medium">TIME</p>
-                    <p className="font-semibold text-gray-900">
-                      {selectedSlot && formatTimeSlot(selectedSlot.start_time)}
-                    </p>
+                  <div className=\"text-sm text-gray-600\">
+                    {formatTimeSlot(selectedSlot.start_time)}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            {step === 'date' && (
-              <div className="flex items-center justify-center h-full text-center">
-                <div>
-                  <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Select a date to see available times</p>
+            {/* Right Section - Time Slots & Form */}
+            <div className=\"md:col-span-3 p-8\">
+              {!selectedDate ? (
+                <div className=\"flex items-center justify-center h-full\">
+                  <p className=\"text-gray-500 text-sm\">Select a date to see available times</p>
                 </div>
-              </div>
-            )}
-
-            {step === 'time' && (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Available Times
-                </h2>
-                {loadingSlots ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-                  </div>
-                ) : availableSlots.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">No available times for this date</p>
+              ) : !selectedSlot ? (
+                <>
+                  <h3 className=\"text-sm font-semibold text-gray-900 mb-4\">
+                    {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                  </h3>
+                  {loadingSlots ? (
+                    <div className=\"flex justify-center py-8\">
+                      <div className=\"inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-gray-900 border-r-transparent\"></div>
+                    </div>
+                  ) : availableSlots.length === 0 ? (
+                    <div className=\"text-center py-12\">
+                      <p className=\"text-gray-500 text-sm mb-4\">No available times for this date</p>
+                      <button
+                        onClick={() => setSelectedDate(undefined)}
+                        className=\"text-sm text-gray-900 hover:underline\"
+                      >
+                        Choose another date
+                      </button>
+                    </div>
+                  ) : (
+                    <div className=\"grid grid-cols-2 gap-2 max-h-96 overflow-y-auto\">
+                      {availableSlots.map((slot, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedSlot(slot)}
+                          className=\"px-4 py-2.5 text-sm font-medium border border-gray-300 rounded-lg hover:border-gray-900 hover:bg-gray-50 transition text-gray-900\"
+                          data-testid={`time-slot-${index}`}
+                        >
+                          {formatTimeSlot(slot.start_time)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className=\"mb-6\">
                     <button
-                      onClick={() => {
-                        setSelectedDate(undefined);
-                        setStep('date');
-                      }}
-                      className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                      onClick={() => setSelectedSlot(null)}
+                      className=\"text-sm text-gray-600 hover:text-gray-900\"
                     >
-                      Choose another date
+                      ← Change time
                     </button>
                   </div>
-                ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                    {availableSlots.map((slot, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSlotSelect(slot)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center font-medium text-gray-700 hover:text-blue-600"
-                        data-testid={`time-slot-${index}`}
-                      >
-                        {formatTimeSlot(slot.start_time)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {step === 'form' && (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                  Enter Your Details
-                </h2>
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User size={18} className="text-gray-400" />
+                  <h3 className=\"text-sm font-semibold text-gray-900 mb-6\">Enter Details</h3>
+                  <form onSubmit={handleSubmit} className=\"space-y-4\">
+                    <div>
+                      <label className=\"block text-sm font-medium text-gray-700 mb-2\">
+                        Name *
+                      </label>
+                      <div className=\"relative\">
+                        <div className=\"absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none\">
+                          <User size={18} className=\"text-gray-400\" />
+                        </div>
+                        <input
+                          type=\"text\"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className=\"w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent\"
+                          required
+                          placeholder=\"Your name\"
+                          data-testid=\"booking-name-input\"
+                        />
                       </div>
-                      <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        required
-                        placeholder="John Doe"
-                        data-testid="booking-name-input"
-                      />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail size={18} className="text-gray-400" />
+                    <div>
+                      <label className=\"block text-sm font-medium text-gray-700 mb-2\">
+                        Email *
+                      </label>
+                      <div className=\"relative\">
+                        <div className=\"absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none\">
+                          <Mail size={18} className=\"text-gray-400\" />
+                        </div>
+                        <input
+                          type=\"email\"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className=\"w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent\"
+                          required
+                          placeholder=\"you@example.com\"
+                          data-testid=\"booking-email-input\"
+                        />
                       </div>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        required
-                        placeholder="john@example.com"
-                        data-testid="booking-email-input"
-                      />
                     </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    data-testid="confirm-booking-button"
-                  >
-                    {submitting ? (
-                      <>
-                        <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent"></div>
-                        <span>Confirming...</span>
-                      </>
-                    ) : (
-                      'Confirm Booking'
-                    )}
-                  </button>
-                </form>
-              </>
-            )}
+                    <button
+                      type=\"submit\"
+                      disabled={submitting}
+                      className=\"w-full px-6 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed\"
+                      data-testid=\"confirm-booking-button\"
+                    >
+                      {submitting ? 'Confirming...' : 'Confirm'}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        .cal-daypicker .rdp {
+          --rdp-cell-size: 40px;
+          margin: 0;
+        }
+        .cal-daypicker .rdp-months {
+          justify-content: center;
+        }
+        .cal-daypicker .rdp-caption {
+          display: flex;
+          justify-content: center;
+          padding: 1rem 0;
+          font-weight: 600;
+          font-size: 0.875rem;
+        }
+        .cal-daypicker .rdp-head_cell {
+          color: #6b7280;
+          font-weight: 500;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+        }
+        .cal-daypicker .rdp-day {
+          font-size: 0.875rem;
+          border-radius: 0.5rem;
+          border: 1px solid transparent;
+        }
+        .cal-daypicker .rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
+          background-color: #f9fafb;
+          border-color: #e5e7eb;
+        }
+        .cal-daypicker .rdp-day_disabled {
+          color: #d1d5db;
+        }
+      `}</style>
     </div>
   );
 }
